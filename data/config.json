@@ -41,6 +41,13 @@
       "anim": "fade-up-left",
       "text": "Tung Sahur",
       "bubble_class": "bubble-left yellow-border"
+    },
+    {
+      "img": "krish.png",
+      "pos": { "bottom": "5%", "left": "24%" },
+      "anim": "zoom-in-up",
+      "text": "umaaahh 😘",
+      "bubble_class": "bubble-top pink-border"
     }
   ]
 }
