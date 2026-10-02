@@ -27,6 +27,9 @@
 </head>
 
 <body class="result-body {% if pct >= 70 %}theme-red{% elif pct <= 30 %}theme-green{% else %}theme-yellow{% endif %}">
+    <!-- RESULT AUDIO -->
+    <audio id="result-page-sound" src="{{ url_for('static', filename='assets/sounds/result.mp3') }}" autoplay preload="auto" style="display:none;"></audio>
+
     <!-- BACKGROUND ANIMATION -->
     <div class="bg-gradient"></div>
 
@@ -49,7 +52,6 @@
                 <h1 class="result-score">
                     {{ score }}<span class="score-denominator">/{{ max_score }}</span>
                 </h1>
-
 
                 <p class="meme-label highlight">
                     {{ meme.label }}
@@ -95,15 +97,60 @@
 
     </div>
 
-    <!-- SOUND & SHARING -->
+    <!-- RESULT AUDIO SCRIPT -->
     <script>
-        window.onload = () => {
-            const audio = new Audio("/static/assets/sounds/{{ meme.sound }}");
-            audio.volume = 0.6;
-            audio.play().catch((err) => {
-                console.log("Sound could not be played automatically", err);
-            });
-        }
+        (function() {
+            let hasPlayed = false;
+
+            function playResultAudio() {
+                if (hasPlayed) return;
+                const audio = document.getElementById('result-page-sound');
+                if (!audio) return;
+                
+                audio.volume = 0.8;
+                audio.loop = false;
+                
+                const playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        hasPlayed = true;
+                        removeListeners();
+                    }).catch(err => {
+                        console.log("Autoplay waiting for user interaction:", err);
+                    });
+                }
+            }
+
+            function handleInteraction() {
+                if (!hasPlayed) {
+                    playResultAudio();
+                }
+            }
+
+            function removeListeners() {
+                window.removeEventListener('click', handleInteraction);
+                window.removeEventListener('touchstart', handleInteraction);
+                window.removeEventListener('pointerdown', handleInteraction);
+                window.removeEventListener('mousemove', handleInteraction);
+                window.removeEventListener('keydown', handleInteraction);
+            }
+
+            function initAudio() {
+                window.addEventListener('click', handleInteraction);
+                window.addEventListener('touchstart', handleInteraction);
+                window.addEventListener('pointerdown', handleInteraction);
+                window.addEventListener('mousemove', handleInteraction);
+                window.addEventListener('keydown', handleInteraction);
+
+                playResultAudio();
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initAudio);
+            } else {
+                initAudio();
+            }
+        })();
 
         function shareWhatsApp() {
             const text = `My BrainRot Score is {{ score }}/{{ max_score }} ({{ pct }}% Brain Rot)! 🧠💀 Check yours here: ${window.location.origin}`;
@@ -112,7 +159,6 @@
 
         async function shareInstagram() {
             try {
-                // Fetch the chart image to share
                 const imgUrl = document.getElementById('radar-chart').src;
                 const response = await fetch(imgUrl);
                 const blob = await response.blob();
@@ -125,11 +171,9 @@
                     files: [file]
                 };
 
-                // Check if device supports sharing files
                 if (navigator.canShare && navigator.canShare(shareData)) {
                     await navigator.share(shareData);
                 } else if (navigator.share) {
-                    // Fallback to text only if file sharing is not supported
                     await navigator.share({
                         title: shareData.title,
                         text: shareData.text,
@@ -140,7 +184,6 @@
                 }
             } catch (err) {
                 console.log('Share failed or fallback triggered:', err);
-                // Fallback: Copy to clipboard
                 const text = `My BrainRot Score is {{ score }}/{{ max_score }} ({{ pct }}% Brain Rot)! 🧠💀 Check yours at ${window.location.origin}`;
                 navigator.clipboard.writeText(text).then(() => {
                     alert('Result copied to clipboard! Paste it on your Instagram Story 📸');
@@ -160,7 +203,6 @@
             easing: 'ease-out-cubic'
         });
 
-        // Apply theme from localStorage
         if (localStorage.getItem('br_theme') === 'light') {
             document.body.classList.add('light-mode');
         }

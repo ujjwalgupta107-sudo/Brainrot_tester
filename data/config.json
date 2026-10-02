@@ -44,7 +44,7 @@
     },
     {
       "img": "krish.png",
-      "pos": { "bottom": "5%", "left": "24%" },
+      "pos": { "bottom": "18%", "left": "22%" },
       "anim": "zoom-in-up",
       "text": "umaaahh 😘",
       "bubble_class": "bubble-top pink-border"
